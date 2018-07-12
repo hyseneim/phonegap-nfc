@@ -88,7 +88,8 @@ public class NfcPlugin extends CordovaPlugin implements NfcAdapter.OnNdefPushCom
     private CallbackContext readerModeCallback;
     private CallbackContext channelCallback;
     private CallbackContext shareTagCallback;
-    private CallbackContext handoverCallback;
+	private CallbackContext handoverCallback;
+    private Tag currentTag;
 
     @Override
     public boolean execute(String action, JSONArray data, CallbackContext callbackContext) throws JSONException {
@@ -217,7 +218,7 @@ public class NfcPlugin extends CordovaPlugin implements NfcAdapter.OnNdefPushCom
         });
 
     }
-
+	
     private void disableReaderMode(CallbackContext callbackContext) {
         getActivity().runOnUiThread(() -> {
             readerModeCallback = null;
@@ -233,6 +234,8 @@ public class NfcPlugin extends CordovaPlugin implements NfcAdapter.OnNdefPushCom
         @Override
         public void onTagDiscovered(Tag tag) {
 
+			currentTag = tag ;
+		
             JSONObject json;
 
             // If the tag supports Ndef, try and return an Ndef message
@@ -855,10 +858,12 @@ public class NfcPlugin extends CordovaPlugin implements NfcAdapter.OnNdefPushCom
         this.cordova.getThreadPool().execute(() -> {
             try {
 
+				
+			
                 Tag tag = getIntent().getParcelableExtra(NfcAdapter.EXTRA_TAG);
                 if (tag == null) {
-                    tag = savedIntent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                }
+					tag = currentTag;
+				}
 
                 if (tag == null) {
                     Log.e(TAG, "No Tag");
